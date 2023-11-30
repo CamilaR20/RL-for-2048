@@ -10,7 +10,7 @@ class GameEnv(gym.Env):
     def __init__(self, score=0, grid=None):
         # Define action and observation space: https://stable-baselines3.readthedocs.io/en/master/guide/custom_env.html
         self.action_space = gym.spaces.Discrete(N_ACTIONS)
-        self.observation_space = gym.spaces.Box(low=0, high=2048, shape=(1, 4, 4), dtype=np.uint8)
+        self.observation_space = gym.spaces.Box(low=0, high=255, shape=(12, 4, 4), dtype=np.uint8)
 
         # Can initialize a game with a previous state and score
         self.score = score
@@ -35,7 +35,7 @@ class GameEnv(gym.Env):
         self.add_new_tile()
         self.game_over()
 
-        return np.copy(self.grid), reward, self.done, False, None
+        return self.encode_grid(np.copy(self.grid)), float(reward), self.done, False, {}
     
     def reset(self, seed=None, options=None):
         # Initialize environment from scratch
@@ -46,14 +46,18 @@ class GameEnv(gym.Env):
         self.done = False
         self.win = False
 
-        if self.grid is None:
-            self.grid = np.zeros((4, 4), dtype=int)
-            # Add 2 random tiles to start
-            self.add_new_tile(value=2)
-            self.add_new_tile(value=2)
+        self.grid = np.zeros((4, 4), dtype=int)
+        # Add 2 random tiles to start
+        self.add_new_tile(value=2)
+        self.add_new_tile(value=2)
 
-        observation = 0
-        return observation, None
+        return self.encode_grid(np.copy(self.grid)), {}
+    
+    def render(self):
+        print(self.grid)
+
+    def close(self):
+        pass
     
     def add_new_tile(self, value=None):
         value = value if value is not None else np.random.choice(np.array([2, 4]), p=[0.9, 0.1])
@@ -107,8 +111,14 @@ class GameEnv(gym.Env):
                 rewards[action], _ = self.slide_left(grid_copy)
             over = np.all(rewards == -1)
             self.done = True if over else False
-                
 
+    def encode_grid(self, grid_copy):
+        # For RL algorithms: encode in 12 channels with 1s and 0s that indicate what number is in each cell
+        observation = np.zeros((12, 4, 4), dtype=np.uint8)
+        for i, value in enumerate([0, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]):
+            observation[i, grid_copy == value] = 255
+        return observation
+                
 if __name__ == "__main__":
     game = GameEnv()
     print("Game Over")

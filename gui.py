@@ -98,7 +98,8 @@ class Board(Frame):
 
 
 if __name__ == "__main__":
-    ai = "HUMAN" # If AI is None, there is a human player and key presses are received
+    # ai can be the path to a trained model that takes in the grid (observation) as input and outputs an action
+    ai = "HUMAN" # If AI is HUMAN, there is a human player and key presses are received
 
     env = env_2048.GameEnv()
     board = Board(env, ai)
