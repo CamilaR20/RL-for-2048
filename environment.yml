@@ -1,0 +1,17 @@
+name: rl
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pip
+  - tk
+  - pip:
+    - stable-baselines3[extra]
+    - gymnasium
+    - numpy
+    - matplotlib
+
+# conda remove --name rl --all
+# conda env create -f environment.yml 
+
