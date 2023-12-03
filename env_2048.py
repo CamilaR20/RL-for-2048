@@ -10,7 +10,7 @@ class GameEnv(gym.Env):
     def __init__(self, score=0, grid=None):
         # Define action and observation space: https://stable-baselines3.readthedocs.io/en/master/guide/custom_env.html
         self.action_space = gym.spaces.Discrete(N_ACTIONS)
-        self.observation_space = gym.spaces.Box(low=0, high=255, shape=(12, 4, 4), dtype=np.uint8)
+        self.observation_space = gym.spaces.Box(low=0, high=1, shape=(12, 4, 4), dtype=np.uint8)
 
         # Can initialize a game with a previous state and score
         self.score = score
@@ -114,9 +114,9 @@ class GameEnv(gym.Env):
 
     def encode_grid(self, grid_copy):
         # For RL algorithms: encode in 12 channels with 1s and 0s that indicate what number is in each cell
-        observation = np.zeros((12, 4, 4), dtype=np.uint8)
+        observation = np.zeros((12, 4, 4), dtype=np.float32)
         for i, value in enumerate([0, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]):
-            observation[i, grid_copy == value] = 255
+            observation[i, grid_copy == value] = 1
         return observation
                 
 if __name__ == "__main__":

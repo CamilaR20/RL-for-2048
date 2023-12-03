@@ -4,7 +4,9 @@ from tkinter import Frame, Label, CENTER
 import numpy as np
 import env_2048
 from style import *
-
+from train import DQN
+import torch
+import time
 
 class Board(Frame):
     def __init__(self, env, ai=None):
@@ -78,6 +80,7 @@ class Board(Frame):
             Label(game_over_frame, text="Game over!", bg=LOSER_BG, fg=GAME_OVER_FONT_COLOR, font=GAME_OVER_FONT).pack()
 
     def key_press(self, event):
+        global model
         key = repr(event.char)
 
         if self.done:
@@ -94,12 +97,22 @@ class Board(Frame):
                 print("Key not supported (try 'a', 's', 'd', 'w').")
         else:
             # AI is playing
-            pass
+            observation = torch.tensor(self.env.encode_grid(np.copy(self.env.grid)), dtype=torch.float32).unsqueeze(0)
+            action = model(observation).max(1).indices.view(1, 1).item()
+            _, _, self.done, _, _ = self.env.step(action)
+            self.update_GUI(self.env.grid, self.env.score)
+            if self.done:
+                self.game_over(self.env.win)
 
 
 if __name__ == "__main__":
     # ai can be the path to a trained model that takes in the grid (observation) as input and outputs an action
-    ai = "HUMAN" # If AI is HUMAN, there is a human player and key presses are received
+    ai = "AI" # If AI is HUMAN, there is a human player and key presses are received
+
+    # If an AI is playing, the model must be loaded before
+    model = DQN((12, 4, 4), 4)
+    model.load_state_dict(torch.load('./model_1000.pt'))
+    model.eval()
 
     env = env_2048.GameEnv()
     board = Board(env, ai)
