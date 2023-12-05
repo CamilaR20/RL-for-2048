@@ -4,7 +4,7 @@ from tkinter import Frame, Label, CENTER
 import numpy as np
 import env_2048
 from style import *
-from train import DQN
+from train_conv import DQN
 import torch
 import time
 

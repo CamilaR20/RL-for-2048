@@ -17,6 +17,7 @@ class GameEnv(gym.Env):
         self.grid = grid
         self.done = False
         self.win = False
+        self.reward2 = 1 # To not produce a reward when there are no new higher value tiles, to try to get it to achieve the 2048 tile
 
         if grid is None:
             self.grid = np.zeros((4, 4), dtype=int)
@@ -36,6 +37,7 @@ class GameEnv(gym.Env):
         self.game_over()
 
         return self.encode_grid(np.copy(self.grid)), float(reward), self.done, False, {}
+        # return self.encode_grid(np.copy(self.grid)), float(self.reward2), self.done, False, {}
     
     def reset(self, seed=None, options=None):
         # Initialize environment from scratch
@@ -61,12 +63,16 @@ class GameEnv(gym.Env):
     
     def add_new_tile(self, value=None):
         value = value if value is not None else np.random.choice(np.array([2, 4]), p=[0.9, 0.1])
+        # value = 2
 
         empty_cells = np.argwhere(self.grid == 0)
         if empty_cells.size == 0:
             self.done = True
             return
-
+        
+        # empty_rightmost = empty_cells[empty_cells[:,1] == empty_cells[:,1].max(), :]
+        # idx, idy = empty_rightmost[empty_rightmost[:, 0] == empty_rightmost[:, 0].min(), :][0]
+        # idx, idy = empty_rightmost[np.random.choice(empty_rightmost.shape[0])]
         idx, idy = empty_cells[np.random.choice(empty_cells.shape[0])]
         self.grid[idx, idy] = value
 
@@ -95,7 +101,8 @@ class GameEnv(gym.Env):
             if tmp:
                 row[leftmost] = tmp
                 
-        reward = -1 if np.array_equal(start_grid, grid_copy) else reward # If movement is invalid, reward is -1
+        # self.moved = False if np.array_equal(start_grid, grid_copy) else True # If movement is invalid, the board did not move
+        self.reward2 = 0 if start_grid.max() == grid_copy.max() else 1
         return reward, grid_copy
 
     def game_over(self):

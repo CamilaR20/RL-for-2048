@@ -13,11 +13,11 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-BATCH_SIZE = 128 # BATCH_SIZE is the number of transitions sampled from the replay buffer
+BATCH_SIZE = 32 # BATCH_SIZE is the number of transitions sampled from the replay buffer
 GAMMA = 0.99 # GAMMA is the discount factor
 EPS_START = 0.9 # EPS_START is the starting value of epsilon
-EPS_END = 0.05 # EPS_END is the final value of epsilon
-EPS_DECAY = 1000 # EPS_DECAY controls the rate of exponential decay of epsilon, higher means a slower decay
+EPS_END = 0.01 # EPS_END is the final value of epsilon
+EPS_DECAY = 100 # EPS_DECAY controls the rate of exponential decay of epsilon, higher means a slower decay
 TAU = 0.005 # TAU is the update rate of the target network
 LR = 1e-4 # LR is the learning rate of the ``AdamW`` optimizer
 
@@ -38,20 +38,20 @@ class ReplayMemory(object):
 class DQN(nn.Module):
     def __init__(self, observation_shape, n_actions):
         super(DQN, self).__init__()
-        self.layer1 = nn.Conv2d(observation_shape[0], 64, kernel_size=2, stride=1, padding=0)
-        self.layer2 = nn.Conv2d(64, 128, kernel_size=2, stride=1, padding=0)
-        self.layer3 = nn.Flatten()
+        self.layer1 = nn.Flatten()
+        self.layer2 = nn.Linear(12*4*4, 1024)
+        self.layer3 = nn.Linear(1024, 512)
         self.layer4 = nn.Linear(512, 256)
-        self.layer5 = nn.Linear(256, n_actions)
+        self.layer5 = nn.Linear(256, 4)
 
     # Called with either one element to determine next action, or a batch
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
     def forward(self, x):
-        x = F.relu(self.layer1(x))
+        x = self.layer1(x)
         x = F.relu(self.layer2(x))
-        x = self.layer3(x)
+        x = F.relu(self.layer3(x))
         x = F.relu(self.layer4(x))
-        x = F.relu(self.layer5(x))
+        x = self.layer5(x)
         return x
 
 def select_action(state):
@@ -117,17 +117,17 @@ def optimize_model():
 
 
 def plot_learning_curves(accumulated_reward):
-    plt.figure(1)
+    plt.figure()
     accumulated_reward_t = torch.tensor(accumulated_reward, dtype=torch.float)
     plt.title('2048 - Training curve')
     plt.xlabel('Episode')
     plt.ylabel('Score')
-    plt.plot(accumulated_reward_t.numpy())
+    plt.plot(accumulated_reward_t.numpy(), color='tab:blue')
     # Take 100 episode averages and plot them too
     if len(accumulated_reward_t) >= 50:
         means = accumulated_reward_t.unfold(0, 50, 1).mean(1).view(-1)
         means = torch.cat((torch.zeros(99), means))
-        plt.plot(means.numpy())
+        plt.plot(means.numpy(), color='tab:orange')
     plt.savefig('./learning_curve.png')
 
 
@@ -198,6 +198,11 @@ if __name__ == "__main__":
             if done:
                 accumulated_reward.append(env.score)
                 break
+
+        if (i_episode % 500) == 0:
+            plot_learning_curves(accumulated_reward)
+            torch.save(policy_net.state_dict(), "./model.pt")
+
 
     print('Completed training in {}s.'.format(time.time() - start_time))
     plot_learning_curves(accumulated_reward)
