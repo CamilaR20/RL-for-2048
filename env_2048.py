@@ -36,8 +36,8 @@ class GameEnv(gym.Env):
         self.add_new_tile()
         self.game_over()
 
-        return self.encode_grid(np.copy(self.grid)), float(reward), self.done, False, {}
-        # return self.encode_grid(np.copy(self.grid)), float(self.reward2), self.done, False, {}
+        # return self.encode_grid(np.copy(self.grid)), float(reward), self.done, False, {}
+        return self.encode_grid(np.copy(self.grid)), float(self.reward2), self.done, False, {}
     
     def reset(self, seed=None, options=None):
         # Initialize environment from scratch
@@ -62,18 +62,18 @@ class GameEnv(gym.Env):
         pass
     
     def add_new_tile(self, value=None):
-        value = value if value is not None else np.random.choice(np.array([2, 4]), p=[0.9, 0.1])
-        # value = 2
+        # value = value if value is not None else np.random.choice(np.array([2, 4]), p=[0.9, 0.1])
+        value = 2
 
         empty_cells = np.argwhere(self.grid == 0)
         if empty_cells.size == 0:
             self.done = True
             return
         
-        # empty_rightmost = empty_cells[empty_cells[:,1] == empty_cells[:,1].max(), :]
-        # idx, idy = empty_rightmost[empty_rightmost[:, 0] == empty_rightmost[:, 0].min(), :][0]
+        empty_rightmost = empty_cells[empty_cells[:,1] == empty_cells[:,1].max(), :]
+        idx, idy = empty_rightmost[empty_rightmost[:, 0] == empty_rightmost[:, 0].min(), :][0]
         # idx, idy = empty_rightmost[np.random.choice(empty_rightmost.shape[0])]
-        idx, idy = empty_cells[np.random.choice(empty_cells.shape[0])]
+        # idx, idy = empty_cells[np.random.choice(empty_cells.shape[0])]
         self.grid[idx, idy] = value
 
     def slide_left(self, grid_copy):
@@ -103,6 +103,9 @@ class GameEnv(gym.Env):
                 
         # self.moved = False if np.array_equal(start_grid, grid_copy) else True # If movement is invalid, the board did not move
         self.reward2 = 0 if start_grid.max() == grid_copy.max() else 1
+        # self.reward2 = self.reward2 + 1 if np.argwhere(start_grid == 0).shape[0] < np.argwhere(grid_copy == 0).shape[0] else self.reward2
+        n_merged = np.argwhere(grid_copy == 0).shape[0] - np.argwhere(start_grid == 0).shape[0]
+        self.reward2 = self.reward2 + n_merged
         return reward, grid_copy
 
     def game_over(self):

@@ -134,7 +134,7 @@ def plot_learning_curves(accumulated_reward):
         means = accumulated_reward_t.unfold(0, 50, 1).mean(1).view(-1)
         means = torch.cat((torch.zeros(99), means))
         plt.plot(means.numpy(), color='tab:orange')
-    plt.savefig('./learning_curve.png')
+    plt.savefig('./learning_curve2.png')
 
 
 if __name__ == "__main__":
@@ -207,10 +207,10 @@ if __name__ == "__main__":
 
         if (i_episode % 500) == 0:
             plot_learning_curves(accumulated_reward)
-            torch.save(policy_net.state_dict(), "./model.pt")
+            torch.save(policy_net.state_dict(), "./model2.pt")
 
 
     print('Completed training in {}s.'.format(time.time() - start_time))
     plot_learning_curves(accumulated_reward)
 
-    torch.save(policy_net.state_dict(), "./model.pt")
+    torch.save(policy_net.state_dict(), "./model2.pt")

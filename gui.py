@@ -111,7 +111,7 @@ if __name__ == "__main__":
 
     # If an AI is playing, the model must be loaded before
     model = DQN((12, 4, 4), 4)
-    model.load_state_dict(torch.load('./model_1000.pt'))
+    model.load_state_dict(torch.load('./model2.pt'))
     model.eval()
 
     env = env_2048.GameEnv()
