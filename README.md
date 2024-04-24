@@ -1,1 +1,2 @@
-# RL-ECE517: 2048 DEEP-Q
+# Convolutional DQN Agent vs 2048
+Reinforcement Learning project fall 2023.
