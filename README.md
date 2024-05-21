@@ -15,3 +15,4 @@ The repository contains the following scripts and files:
 - *style.py*: contains variables that determine the appearance of the GUI.
 - *benchmark.py*, *benchmark_random.py*: run benchmarks to compare the performance of different agents and strategies (e.g. random, up-down). The benchmarks returns the results of 1.000 games as plots for the distribution of the maximum tile and the maximum score reached by the agent/strategy.
 - *report.pdf*: contains a literature overview on DQN agents for 2048 and the results of experiments run on different environment and reward variations.
+- *clip.mov*: example of an agent playing 2048.
